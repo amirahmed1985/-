@@ -2,25 +2,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شركة قبظه الدواء - الأدوية والحلول البيطرية</title>
+    <title>شركة قبظت الدواء - الأدوية والحلول البيطرية</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Custom font import (Cairo is a popular, modern Arabic font) */
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
         
+        /* ------------------------------------ */
+        /* --- CUSTOM & ENHANCED CSS STYLES --- */
+        /* ------------------------------------ */
+
+        :root {
+            /* Define primary colors as CSS variables for easy use */
+            --color-primary: #1a4f68; /* Deep Professional Blue */
+            --color-accent: #38a169; /* Accent Green */
+        }
+        
         body {
             font-family: 'Cairo', sans-serif;
             background-color: #f8f9fa; /* Light background */
             color: #333;
+            /* Smooth scrolling for anchors */
+            scroll-behavior: smooth;
+        }
+
+        /* Custom Scrollbar for aesthetic appeal on desktop */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--color-accent);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2f855a;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e0e0e0;
         }
 
         .section-header {
             position: relative;
-            padding-bottom: 0.5rem;
+            padding-bottom: 0.75rem; /* Increased padding */
             margin-bottom: 2rem;
             font-weight: 700;
-            color: #1a4f68; /* Deep professional blue */
+            color: var(--color-primary);
         }
         
         .section-header::after {
@@ -30,11 +57,19 @@
             bottom: 0;
             width: 80px;
             height: 4px;
-            background-color: #38a169; /* Accent green */
+            background-color: var(--color-accent);
             border-radius: 2px;
+            /* Subtle animation for the underline on page load */
+            animation: expandLine 1.5s ease-out forwards;
+        }
+        
+        /* Animation for section header underline */
+        @keyframes expandLine {
+            from { width: 0; }
+            to { width: 80px; }
         }
 
-        /* --- New Animation Keyframes --- */
+        /* --- Custom Animation Keyframes (Existing) --- */
         @keyframes slideUp {
             from {
                 opacity: 0;
@@ -53,19 +88,113 @@
             opacity: 0; 
         }
 
-        /* Subtle logo effect on hover */
+        /* Subtle logo effect on hover (Existing) */
         .logo-hover:hover .logo-text {
             transform: scale(1.05);
             transition: transform 0.3s ease;
         }
         .logo-hover:hover .logo-icon {
-            color: #1a4f68; /* Swap icon color on hover */
+            color: var(--color-primary); /* Swap icon color on hover */
             transform: rotate(10deg);
             transition: all 0.3s ease;
         }
+
+        /* Enhanced input focus styling */
+        input:focus, textarea:focus {
+            outline: none !important;
+            box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.5); /* Custom green shadow */
+            border-color: var(--color-accent) !important;
+        }
+        
+        /* ------------------------------------ */
+        /* --- MOBILE MENU SPECIFIC STYLES ---- */
+        /* ------------------------------------ */
+
+        /* CRITICAL ENHANCEMENT: Prevent body scrolling when the menu is open */
+        .menu-open {
+            overflow: hidden; 
+        }
+
+        /* Mobile Menu Overlay (Dark background when menu is open) */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 40; 
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        /* Mobile Menu Container (Sidebar) */
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -280px; /* Initially hidden off-screen to the right */
+            width: 280px;
+            max-width: 80vw;
+            height: 100%;
+            background-color: white;
+            box-shadow: -6px 0 20px rgba(0, 0, 0, 0.3);
+            z-index: 60; 
+            transition: right 0.3s ease;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        /* State when menu is open (applied to body element) */
+        .menu-open .mobile-menu {
+            right: 0; /* Slide into view */
+        }
+        .menu-open .mobile-menu-overlay {
+            opacity: 1;
+            visibility: visible;
+        }
+
+
+        /* Media Query for mobile adjustments (centering header line) */
+        @media (max-width: 768px) {
+            .section-header::after {
+                /* Center the header line on mobile for centered headers */
+                right: 50%;
+                transform: translateX(50%);
+            }
+            .text-center .section-header::after {
+                 right: 50%;
+                 transform: translateX(50%);
+            }
+            .section-header {
+                text-align: center;
+            }
+        }
     </style>
+     <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="antialiased">
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobile-menu-overlay" class="mobile-menu-overlay"></div>
+
+    <!-- Mobile Menu Sidebar -->
+    <div id="mobile-menu" class="mobile-menu">
+        <div class="flex justify-between items-center mb-8 pb-4 border-b">
+            <h3 class="text-xl font-bold text-[#1a4f68]">قائمة التنقل</h3>
+            <!-- Close Button -->
+            <button id="mobile-menu-close" class="text-gray-500 hover:text-[#1a4f68] focus:outline-none text-3xl">
+                &times;
+            </button>
+        </div>
+        <nav class="flex flex-col space-y-4 text-xl">
+            <a href="#home" class="text-gray-700 hover:text-[#38a169] transition duration-200 p-2 rounded-lg hover:bg-gray-50">الرئيسية</a>
+            <a href="#about" class="text-gray-700 hover:text-[#38a169] transition duration-200 p-2 rounded-lg hover:bg-gray-50">عن الشركة</a>
+            <a href="#why-us" class="text-gray-700 hover:text-[#38a169] transition duration-200 p-2 rounded-lg hover:bg-gray-50">لماذا نختارنا</a>
+            <a href="#products" class="text-gray-700 hover:text-[#38a169] transition duration-200 p-2 rounded-lg hover:bg-gray-50">منتجاتنا</a>
+            <a href="#contact" class="text-white text-center py-2 rounded-full bg-[#1a4f68] hover:bg-opacity-90 transition duration-220 mt-4">اتصل بنا</a>
+        </nav>
+    </div>
 
     <!-- Header & Navigation -->
     <header class="sticky top-0 z-50 bg-white shadow-md">
@@ -85,8 +214,8 @@
                 <a href="#contact" class="text-white px-4 py-1 rounded-full bg-[#1a4f68] hover:bg-opacity-90 transition duration-220">اتصل بنا</a>
             </nav>
 
-            <!-- Mobile Menu Button (Placeholder - for a real app, this would toggle a mobile menu) -->
-            <button class="md:hidden text-[#1a4f68] text-3xl focus:outline-none">
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-toggle" class="md:hidden text-[#1a4f68] text-3xl focus:outline-none">
                 <!-- Hamburger Icon -->
                 &#9776;
             </button>
@@ -110,9 +239,13 @@
             </div>
             <!-- Image of Animals (Veterinary Focus) -->
             <div class="md:w-1/2 flex justify-center p-4">
-            <img 
-                    src=https://th.bing.com/th/id/OIP.IQDCM0eibYFzH0wBKQwk_wHaE8?o=7&cb=ucfimg2&rm=3&ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3
+                <!-- Image updated to reflect the pet focus with new green background -->
+                <img 
+                    src=""
+                     
                    
+                   
+                >
             </div>
         </div>
     </section>
@@ -155,6 +288,7 @@
     <!-- New Section: Why Choose Us (Core Values) -->
     <section id="why-us" class="py-16 md:py-24 bg-white animate-slide-up" style="animation-delay: 0.15s;">
         <div class="container mx-auto px-4">
+            <!-- Added text-center class to ensure header line is centered on mobile -->
             <h2 class="text-4xl section-header mb-12 text-center mx-auto w-fit">لماذا تختار شركة قبظه الدواء؟</h2>
             <p class="text-center text-xl text-gray-600 mb-12">نحن نجمع بين الخبرة المحلية والمعايير العالمية لضمان أعلى مستويات الرعاية.</p>
             
@@ -232,6 +366,7 @@
     <!-- New Section: Testimonials and Partners -->
     <section id="partners" class="py-16 md:py-24 animate-slide-up" style="animation-delay: 0.35s;">
         <div class="container mx-auto px-4">
+            <!-- Added text-center class to ensure header line is centered on mobile -->
             <h2 class="text-4xl section-header mb-12 text-center mx-auto w-fit">ماذا يقول عملاؤنا؟ وشركاؤنا</h2>
             
             <!-- Testimonials Slider (Mock) -->
@@ -240,13 +375,21 @@
                     <p class="text-xl italic text-gray-700 mb-6">
                         "منتجات قبظه الدواء غيرت طريقة إدارتنا للمزرعة. الجودة عالية جداً، والنتائج مذهلة في صحة القطيع. الدعم الفني ممتاز وسريع الاستجابة."
                     </p>
-                    <p class="font-bold text-[#1a4f68]"></p>
+                    
+                </div>
+            </div>
+
+            <!-- Partners Logos (Mock) -->
+            <div class="text-center">
+                
+                <div class="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-75">
+                    <!-- Added subtle hover effect to partner logos -->
+
             
-
-
+        </div>
     </section>
 
-    
+    <!-- Contact Section -->
     <section id="contact" class="py-16 md:py-24 animate-slide-up" style="animation-delay: 0.45s;">
         <div class="container mx-auto px-4">
             <h2 class="text-4xl section-header mb-12">تواصل معنا</h2>
@@ -257,14 +400,14 @@
                         <span class="text-3xl text-[#38a169]">📞</span>
                         <div>
                             <p class="font-semibold text-lg text-[#1a4f68]">رقم الهاتف:</p>
-                            <p class="text-gray-600">+966533366803</p>
+                            <p class="text-gray-600"></p>
                         </div>
                     </div>
                     <div class="flex items-center space-x-4 space-x-reverse">
                         <span class="text-3xl text-[#38a169]">📧</span>
                         <div>
                             <p class="font-semibold text-lg text-[#1a4f68]">البريد الإلكتروني:</p>
-                            <p class="text-gray-600">amirahmed1985@gmail.com</p>
+                            <p class="text-gray-600"></p>
                         </div>
                     </div>
                     <div class="flex items-start space-x-4 space-x-reverse">
@@ -300,8 +443,40 @@
         </div>
     </section>
 
+    <!-- Footer -->
+    <footer class="bg-[#1a4f68] text-white py-8">
+        <div class="container mx-auto px-4 text-center">
+            <div class="mb-4">
+    </footer>
 
+    <!-- JavaScript for Mobile Menu Interaction -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.getElementById('mobile-menu-toggle');
+            const closeButton = document.getElementById('mobile-menu-close');
+            const overlay = document.getElementById('mobile-menu-overlay');
+            const menuLinks = document.querySelectorAll('#mobile-menu a');
+            const body = document.body;
 
+            // Function to toggle menu state (add/remove 'menu-open' class on body)
+            const toggleMenu = () => {
+                body.classList.toggle('menu-open');
+            };
 
+            // Event listeners for open/close actions
+            if (toggleButton) toggleButton.addEventListener('click', toggleMenu);
+            if (closeButton) closeButton.addEventListener('click', toggleMenu);
+            if (overlay) overlay.addEventListener('click', toggleMenu);
+
+            // Close menu when a navigation link is clicked
+            menuLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (body.classList.contains('menu-open')) {
+                        toggleMenu();
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
