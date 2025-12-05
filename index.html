@@ -1,0 +1,307 @@
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شركة قبظه الدواء - الأدوية والحلول البيطرية</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font import (Cairo is a popular, modern Arabic font) */
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #f8f9fa; /* Light background */
+            color: #333;
+        }
+
+        .section-header {
+            position: relative;
+            padding-bottom: 0.5rem;
+            margin-bottom: 2rem;
+            font-weight: 700;
+            color: #1a4f68; /* Deep professional blue */
+        }
+        
+        .section-header::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            width: 80px;
+            height: 4px;
+            background-color: #38a169; /* Accent green */
+            border-radius: 2px;
+        }
+
+        /* --- New Animation Keyframes --- */
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Utility class to apply the animation */
+        .animate-slide-up {
+            animation: slideUp 0.8s ease-out forwards;
+            /* Start invisible to allow animation to run */
+            opacity: 0; 
+        }
+
+        /* Subtle logo effect on hover */
+        .logo-hover:hover .logo-text {
+            transform: scale(1.05);
+            transition: transform 0.3s ease;
+        }
+        .logo-hover:hover .logo-icon {
+            color: #1a4f68; /* Swap icon color on hover */
+            transform: rotate(10deg);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header & Navigation -->
+    <header class="sticky top-0 z-50 bg-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <!-- Logo/Company Name -->
+            <div class="text-2xl font-bold text-[#1a4f68] cursor-pointer logo-hover">
+                <span class="logo-text inline-block">قبظه الدواء</span>
+                <span class="logo-icon text-[#38a169] text-3xl align-top inline-block transition duration-300">☤</span>
+            </div>
+            
+            <!-- Navigation Links (Hidden on small screens, revealed in a simple menu normally) -->
+            <nav class="hidden md:flex space-x-4 space-x-reverse text-lg font-medium">
+                <a href="#home" class="text-gray-600 hover:text-[#38a169] transition duration-200">الرئيسية</a>
+                <a href="#about" class="text-gray-600 hover:text-[#38a169] transition duration-200">عن الشركة</a>
+                <a href="#why-us" class="text-gray-600 hover:text-[#38a169] transition duration-200">لماذا نختارنا</a>
+                <a href="#products" class="text-gray-600 hover:text-[#38a169] transition duration-200">منتجاتنا</a>
+                <a href="#contact" class="text-white px-4 py-1 rounded-full bg-[#1a4f68] hover:bg-opacity-90 transition duration-220">اتصل بنا</a>
+            </nav>
+
+            <!-- Mobile Menu Button (Placeholder - for a real app, this would toggle a mobile menu) -->
+            <button class="md:hidden text-[#1a4f68] text-3xl focus:outline-none">
+                <!-- Hamburger Icon -->
+                &#9776;
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero Section (ENLARGED) -->
+    <section id="home" class="bg-gradient-to-l from-white to-[#e6f1f5] py-24 md:py-40">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
+            <!-- Text Content -->
+            <div class="md:w-1/2 text-center md:text-right mb-10 md:mb-0">
+                <h1 class="text-6xl md:text-7xl font-extrabold mb-4 leading-tight text-[#1a4f68]">
+                    صحة الحيوان تبدأ من هنا
+                </h1>
+                <p class="text-xl text-gray-700 mb-8 max-w-lg md:mr-auto">
+                    نحن رواد في توفير الأدوية واللقاحات البيطرية عالية الجودة، ملتزمون بدعم المزارع والمربين بأفضل الحلول العلمية.
+                </p>
+                <a href="#products" class="inline-block bg-[#38a169] text-white text-xl font-semibold py-4 px-10 rounded-full shadow-xl hover:bg-opacity-80 transition duration-300 transform hover:scale-105 hover:shadow-2xl">
+                    اكتشف منتجاتنا الآن
+                </a>
+            </div>
+            <!-- Image of Animals (Veterinary Focus) -->
+            <div class="md:w-1/2 flex justify-center p-4">
+            <img 
+                    src=https://th.bing.com/th/id/OIP.IQDCM0eibYFzH0wBKQwk_wHaE8?o=7&cb=ucfimg2&rm=3&ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3
+                   
+            </div>
+        </div>
+    </section>
+
+    <!-- About Us Section -->
+    <section id="about" class="py-16 md:py-24 animate-slide-up">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl section-header mb-8">من نحن</h2>
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <!-- Mission & Vision -->
+                <div>
+                    <p class="text-gray-600 text-lg mb-6 leading-relaxed">
+                        تأسست شركة قبظه الدواء على مبادئ الابتكار والجودة، بهدف سد الفجوة في سوق الأدوية البيطرية الإقليمي. نؤمن بأن الثروة الحيوانية هي ركيزة أساسية للأمن الغذائي، ولذلك نكرس جهودنا لتوفير منتجات فعالة وآمنة تلبي أعلى المعايير الدولية.
+                    </p>
+                    <p class="text-gray-600 text-lg leading-relaxed border-r-4 border-[#38a169] pr-4 pt-2 pb-2 bg-gray-50 rounded-r-md">
+                        <span class="font-bold text-[#1a4f68]">رؤيتنا:</span> أن نكون الخيار الأول للمهنيين البيطريين والمربين في المنطقة.
+                    </p>
+                </div>
+                <!-- Quality Focus (Added hover animation) -->
+                <div class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1">
+                    <h3 class="text-2xl font-bold text-[#38a169] mb-4 flex items-center">
+                        <span class="ml-3 text-3xl">✓</span> التزام لا يتزعزع بالجودة
+                    </h3>
+                    <ul class="space-y-3 text-gray-700">
+                        <li class="flex items-start">
+                            <span class="ml-2 text-xl text-[#1a4f68]">◉</span> كافة منتجاتنا حاصلة على شهادات الجودة العالمية (GMP).
+                        </li>
+                        <li class="flex items-start">
+                            <span class="ml-2 text-xl text-[#1a4f68]">◉</span> فريق بحث وتطوير يضم نخبة من الصيادلة والبيطريين.
+                        </li>
+                        <li class="flex items-start">
+                            <span class="ml-2 text-xl text-[#1a4f68]">◉</span> ضمان فعالية وسلامة التركيبات الدوائية لجميع أنواع الحيوانات.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- New Section: Why Choose Us (Core Values) -->
+    <section id="why-us" class="py-16 md:py-24 bg-white animate-slide-up" style="animation-delay: 0.15s;">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl section-header mb-12 text-center mx-auto w-fit">لماذا تختار شركة قبظه الدواء؟</h2>
+            <p class="text-center text-xl text-gray-600 mb-12">نحن نجمع بين الخبرة المحلية والمعايير العالمية لضمان أعلى مستويات الرعاية.</p>
+            
+            <div class="grid md:grid-cols-4 gap-8">
+                <!-- Value 1: Innovation -->
+                <div class="text-center p-6 rounded-xl border border-gray-200 hover:shadow-lg transition duration-300 transform hover:scale-[1.02]">
+                    <div class="text-5xl text-[#38a169] mb-4">💡</div>
+                    <h3 class="text-xl font-bold text-[#1a4f68] mb-2">الابتكار المستمر</h3>
+                    <p class="text-gray-600 text-sm">نستثمر في البحث والتطوير لتقديم أحدث التركيبات الدوائية والحلول الوقائية.</p>
+                </div>
+
+                <!-- Value 2: Trust -->
+                <div class="text-center p-6 rounded-xl border border-gray-200 hover:shadow-lg transition duration-300 transform hover:scale-[1.02]">
+                    <div class="text-5xl text-yellow-600 mb-4">🤝</div>
+                    <h3 class="text-xl font-bold text-[#1a4f68] mb-2">الموثوقية والشفافية</h3>
+                    <p class="text-gray-600 text-sm">جميع مراحل الإنتاج تخضع لرقابة صارمة لضمان منتج يمكنك الوثوق به.</p>
+                </div>
+
+                <!-- Value 3: Expertise -->
+                <div class="text-center p-6 rounded-xl border border-gray-200 hover:shadow-lg transition duration-300 transform hover:scale-[1.02]">
+                    <div class="text-5xl text-red-500 mb-4">🔬</div>
+                    <h3 class="text-xl font-bold text-[#1a4f68] mb-2">فريق من الخبراء</h3>
+                    <p class="text-gray-600 text-sm">نخبة من الأطباء والصيادلة البيطريين لتقديم الدعم الفني والعلمي.</p>
+                </div>
+
+                <!-- Value 4: Sustainability -->
+                <div class="text-center p-6 rounded-xl border border-gray-200 hover:shadow-lg transition duration-300 transform hover:scale-[1.02]">
+                    <div class="text-5xl text-[#1a4f68] mb-4">🌱</div>
+                    <h3 class="text-xl font-bold text-[#1a4f68] mb-2">الاستدامة والبيئة</h3>
+                    <p class="text-gray-600 text-sm">حلول صديقة للبيئة تضمن صحة الحيوان وسلامة المنتج النهائي للاستهلاك البشري.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products/Services Section -->
+    <section id="products" class="py-16 md:py-24 bg-[#e6f1f5] animate-slide-up" style="animation-delay: 0.25s;">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl section-header mb-12">فئات منتجاتنا الرئيسية</h2>
+            
+            <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                <!-- Product Card 1: Vaccines (Added hover animation) -->
+                <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition duration-300 border-t-4 border-[#38a169] transform hover:-translate-y-1">
+                    <div class="text-5xl mb-4 text-[#38a169]">💉</div>
+                    <h3 class="text-2xl font-bold text-[#1a4f68] mb-3">اللقاحات والتحصينات</h3>
+                    <p class="text-gray-600 mb-4">
+                        مجموعة متكاملة من اللقاحات الوقائية لمكافحة الأمراض الوبائية في الدواجن والماشية والحيوانات الأليفة.
+                    </p>
+                    <a href="#" class="text-[#38a169] hover:underline font-medium">عرض التفاصيل &rarr;</a>
+                </div>
+
+                <!-- Product Card 2: Antibiotics (Added hover animation) -->
+                <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition duration-300 border-t-4 border-[#1a4f68] transform hover:-translate-y-1">
+                    <div class="text-5xl mb-4 text-[#1a4f68]">💊</div>
+                    <h3 class="text-2xl font-bold text-[#1a4f68] mb-3">المضادات الحيوية والمعالجات</h3>
+                    <p class="text-gray-600 mb-4">
+                        تركيبات مبتكرة للقضاء على العدوى البكتيرية والفيروسية، مع التركيز على السلامة والفعالية السريعة.
+                    </p>
+                    <a href="#" class="text-[#1a4f68] hover:underline font-medium">عرض التفاصيل &rarr;</a>
+                </div>
+
+                <!-- Product Card 3: Supplements (Added hover animation) -->
+                <div class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition duration-300 border-t-4 border-yellow-600 transform hover:-translate-y-1">
+                    <div class="text-5xl mb-4 text-yellow-600">🍎</div>
+                    <h3 class="text-2xl font-bold text-[#1a4f68] mb-3">المكملات الغذائية والفيتامينات</h3>
+                    <p class="text-gray-600 mb-4">
+                        حلول لتعزيز النمو، وتقوية المناعة، وتحسين الأداء العام للحيوانات في جميع مراحلها العمرية.
+                    </p>
+                    <a href="#" class="text-yellow-600 hover:underline font-medium">عرض التفاصيل &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Section: Testimonials and Partners -->
+    <section id="partners" class="py-16 md:py-24 animate-slide-up" style="animation-delay: 0.35s;">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl section-header mb-12 text-center mx-auto w-fit">ماذا يقول عملاؤنا؟ وشركاؤنا</h2>
+            
+            <!-- Testimonials Slider (Mock) -->
+            <div class="bg-[#f2fcf5] p-8 rounded-xl shadow-inner mb-12">
+                <div class="text-center max-w-3xl mx-auto">
+                    <p class="text-xl italic text-gray-700 mb-6">
+                        "منتجات قبظه الدواء غيرت طريقة إدارتنا للمزرعة. الجودة عالية جداً، والنتائج مذهلة في صحة القطيع. الدعم الفني ممتاز وسريع الاستجابة."
+                    </p>
+                    <p class="font-bold text-[#1a4f68]"></p>
+            
+
+
+    </section>
+
+    
+    <section id="contact" class="py-16 md:py-24 animate-slide-up" style="animation-delay: 0.45s;">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl section-header mb-12">تواصل معنا</h2>
+            <div class="grid md:grid-cols-2 gap-12">
+                <!-- Contact Info -->
+                <div class="space-y-6">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="text-3xl text-[#38a169]">📞</span>
+                        <div>
+                            <p class="font-semibold text-lg text-[#1a4f68]">رقم الهاتف:</p>
+                            <p class="text-gray-600">+966533366803</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <span class="text-3xl text-[#38a169]">📧</span>
+                        <div>
+                            <p class="font-semibold text-lg text-[#1a4f68]">البريد الإلكتروني:</p>
+                            <p class="text-gray-600">amirahmed1985@gmail.com</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-4 space-x-reverse">
+                        <span class="text-3xl text-[#38a169]">📍</span>
+                        <div>
+                            <p class="font-semibold text-lg text-[#1a4f68]">العنوان الرئيسي:</p>
+                            <p class="text-gray-600"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Form -->
+                <div class="bg-white p-8 rounded-xl shadow-xl">
+                    <form class="space-y-4">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">الاسم الكامل</label>
+                            <input type="text" id="name" name="name" placeholder="أدخل اسمك" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#38a169] focus:border-[#38a169]">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">البريد الإلكتروني</label>
+                            <input type="email" id="email" name="email" placeholder="أدخل بريدك الإلكتروني" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#38a169] focus:border-[#38a169]">
+                        </div>
+                        <div>
+                            <label for="message" class="block text-sm font-medium text-gray-700 mb-1">الرسالة</label>
+                            <textarea id="message" name="message" rows="4" placeholder="اكتب رسالتك هنا..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-[#38a169] focus:border-[#38a169]"></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-[#1a4f68] text-white font-semibold py-3 rounded-lg hover:bg-opacity-90 transition duration-300 shadow-md transform hover:scale-[1.01]">
+                            إرسال الرسالة
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+
+</body>
+</html>
