@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';">
+    <title>منتجات حيوانات المزرعة — قبضة الدواء</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- شريط التنقل -->
+    <header class="nav">
+        <a href="index.html" class="nav__mark">قبضة <span>الدواء</span></a>
+        <nav class="nav__links">
+            <a href="index.html#categories">التصنيفات</a>
+            <a href="index.html#why">لماذا نحن</a>
+            <a href="index.html#contact">تواصل معنا</a>
+        </nav>
+        <div class="cart-wrapper">
+            <button class="cart-btn" id="cartToggle">🛒 السلة (<span id="cartCount">٠</span>)</button>
+            <div class="cart-panel" id="cartPanel">
+                <div class="cart-panel__header">
+                    <h3>سلة التسوق</h3>
+                    <button class="cart-panel__close" id="cartClose">✕</button>
+                </div>
+                <div class="cart-panel__items" id="cartItems">
+                    <p class="cart-empty">سلتك فارغة</p>
+                </div>
+                <div class="cart-panel__footer">
+                    <div class="cart-total">
+                        <span>الإجمالي</span>
+                        <span id="cartTotal">٠ ر.س.</span>
+                    </div>
+                    <button class="btn cart-checkout">إتمام الطلب</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- مسار التصفح -->
+    <section class="breadcrumb">
+        <a href="index.html">الرئيسية</a>
+        <span>›</span>
+        <a href="index.html#categories">التصنيفات</a>
+        <span>›</span>
+        <span class="breadcrumb__current">حيوانات المزرعة</span>
+    </section>
+
+    <!-- عنوان الصفحة -->
+    <section class="category-hero">
+        <span class="category-hero__icon">🐄</span>
+        <h1 class="category-hero__title">منتجات حيوانات المزرعة</h1>
+        <p class="category-hero__sub">
+            علاجات وتحصينات بكميات تناسب القطعان، مع تخزين مبرّد يحافظ
+            على فعالية كل جرعة.
+        </p>
+    </section>
+
+    <!-- المنتجات -->
+    <section class="products" id="products">
+        <div class="product-grid">
+            <div class="product-card">
+                <span class="product-card__icon">🐄</span>
+                <span class="badge badge--rx">يتطلب وصفة بيطرية</span>
+                <h3>علاج تطعيمي — حيوانات المزرعة</h3>
+                <p class="product-card__cat">الوقاية والتحصين</p>
+                <div class="product-card__footer">
+                    <span class="price">٤٠ ر.س.</span>
+                    <button class="btn btn--small add-to-cart" data-name="علاج تطعيمي — حيوانات المزرعة" data-price="40">أضف للسلة</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <span class="product-card__icon">🐄</span>
+                <span class="badge badge--rx">يتطلب وصفة بيطرية</span>
+                <h3>مضاد طفيليات داخلية وخارجية — أبقار وأغنام</h3>
+                <p class="product-card__cat">الوقاية والتحصين</p>
+                <div class="product-card__footer">
+                    <span class="price">٤٠ ر.س.</span>
+                    <button class="btn btn--small add-to-cart" data-name="مضاد طفيليات داخلية وخارجية — أبقار وأغنام" data-price="40">أضف للسلة</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <span class="product-card__icon">🐄</span>
+                <span class="badge badge--otc">بدون وصفة</span>
+                <h3>مكمّل معدني للأعلاف — حيوانات المزرعة</h3>
+                <p class="product-card__cat">التغذية والدعم</p>
+                <div class="product-card__footer">
+                    <span class="price">٤٠ ر.س.</span>
+                    <button class="btn btn--small add-to-cart" data-name="مكمّل معدني للأعلاف — حيوانات المزرعة" data-price="40">أضف للسلة</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <span class="product-card__icon">🐄</span>
+                <span class="badge badge--otc">بدون وصفة</span>
+                <h3>محلول إلكتروليت — عجول وأغنام</h3>
+                <p class="product-card__cat">الدعم الغذائي</p>
+                <div class="product-card__footer">
+                    <span class="price">٤٠ ر.س.</span>
+                    <button class="btn btn--small add-to-cart" data-name="محلول إلكتروليت — عجول وأغنام" data-price="40">أضف للسلة</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <span>© ٢٠٢٦ قبضة الدواء — الرياض، المملكة العربية السعودية</span>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <a href="index.html">العودة للرئيسية ↑</a>
+            <a href="admin.html" style="font-size: 0.75rem; opacity: 0.6; text-decoration: none;">⚙️</a>
+        </div>
+    </footer>
+
+      <script type="module" src="firebase-init.js"></script>
+
+    <script src="script.js"></script>
+</body>
+</html>

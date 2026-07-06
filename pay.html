@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إتمام الطلب — قبضة الدواء</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=El+Messiri:wght@500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- شريط التنقل -->
+    <header class="nav">
+        <a href="index.html" class="nav__mark">قبضة <span>الدواء</span></a>
+        <nav class="nav__links">
+            <a href="index.html#categories">التصنيفات</a>
+            <a href="index.html#why">لماذا نحن</a>
+            <a href="index.html#contact">تواصل معنا</a>
+        </nav>
+    </header>
+
+    <!-- مسار التصفح -->
+    <section class="breadcrumb">
+        <a href="index.html">الرئيسية</a>
+        <span>›</span>
+        <span class="breadcrumb__current">إتمام الطلب</span>
+    </section>
+
+    <!-- عنوان الصفحة -->
+    <section class="category-hero">
+        <h1 class="category-hero__title">إتمام الطلب والدفع</h1>
+        <p class="category-hero__sub">راجع طلبك وأدخل بيانات الشحن والدفع لإنهاء عملية الشراء.</p>
+    </section>
+
+    <!-- محتوى صفحة الدفع -->
+    <section class="checkout">
+        <form class="checkout__form" id="checkoutForm">
+
+            <!-- بيانات الشحن -->
+            <div class="checkout__block">
+                <h2 class="checkout__block-title">بيانات الشحن</h2>
+                <div class="form-row">
+                    <label>الاسم الكامل
+                        <input type="text" name="fullName" required placeholder="مثال: أحمد أمير">
+                    </label>
+                </div>
+                <div class="form-row form-row--split">
+                    <label>رقم الجوال
+                        <input type="tel" name="phone" required placeholder="05xxxxxxxx" pattern="[0-9]{9,10}">
+                    </label>
+                    <label>البريد الإلكتروني
+                        <input type="email" name="email" required placeholder="example@email.com">
+                    </label>
+                </div>
+                <div class="form-row">
+                    <label>المدينة
+                        <input type="text" name="city" required placeholder="مثال: الرياض">
+                    </label>
+                </div>
+                <div class="form-row">
+                    <label>العنوان التفصيلي
+                        <input type="text" name="address" required placeholder="الحي، الشارع، رقم المبنى">
+                    </label>
+                </div>
+            </div>
+
+            <!-- طريقة الدفع -->
+            <div class="checkout__block">
+                <h2 class="checkout__block-title">طريقة الدفع</h2>
+                <div style="
+                    background: linear-gradient(135deg, rgba(217, 142, 59, 0.1), rgba(59, 92, 58, 0.05));
+                    padding: 1.5rem;
+                    border-radius: 8px;
+                    border: 2px solid rgba(217, 142, 59, 0.3);
+                    text-align: center;
+                ">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.8rem;">💵</div>
+                    <div style="font-size: 1.2rem; font-weight: 600; color: var(--deep); margin-bottom: 0.5rem;">الدفع عند الاستلام</div>
+                    <p style="color: var(--ink-soft); margin: 0; line-height: 1.6;">
+                        سيتم استلام طلبك بسهولة ودفع المبلغ عند التسليم مباشرة للمندوب.
+                    </p>
+                </div>
+            </div>
+
+            <button type="submit" class="btn checkout__submit">تأكيد الطلب</button>
+        </form>
+
+        <!-- ملخص الطلب -->
+        <aside class="checkout__summary">
+            <h2 class="checkout__block-title">ملخص طلبك</h2>
+            <div id="summaryItems" class="summary-items"></div>
+            <div class="summary-row">
+                <span>المجموع الفرعي</span>
+                <span id="summarySubtotal">٠ ر.س.</span>
+            </div>
+            <div class="summary-row">
+                <span>الشحن</span>
+                <span id="summaryShipping">٢٠ ر.س.</span>
+            </div>
+            <div class="summary-row summary-row--total">
+                <span>الإجمالي</span>
+                <span id="summaryTotal">٠ ر.س.</span>
+            </div>
+        </aside>
+    </section>
+
+    <footer class="footer">
+        <span>© ٢٠٢٦ قبضة الدواء — الرياض، المملكة العربية السعودية</span>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+            <a href="index.html">العودة للرئيسية ↑</a>
+            <a href="admin.html" style="font-size: 0.75rem; opacity: 0.6; text-decoration: none;">⚙️</a>
+        </div>
+    </footer>
+
+   <script type="module" src="firebase-init.js"></script>
+   <script src="pay.js"></script>
+</body>
+</html>
