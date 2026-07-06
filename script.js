@@ -25,24 +25,16 @@ function saveCart(cart) {
 
 async function loadStockFromFirestore() {
     try {
-        const { doc, onSnapshot } = await import(
+        const { doc, getDoc } = await import(
             "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
         );
-
-        onSnapshot(
-            doc(window.db, 'state', 'stock'),
-            (snap) => {
-                cachedStock = snap.exists()
-                    ? snap.data()
-                    : {};
-
-                location.reload();
-            }
-        );
-
+        const snap = await getDoc(doc(window.db, 'state', 'stock'));
+        cachedStock = snap.exists() ? snap.data() : {};
     } catch (e) {
-        console.error('تعذر تحميل المخزون:', e);
+        console.error('تعذر تحميل بيانات المخزون:', e);
+        cachedStock = {};
     }
+    return cachedStock;
 }
 
 // ===== تحديث عدد العناصر في الزر =====
