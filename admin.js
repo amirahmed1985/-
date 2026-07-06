@@ -248,13 +248,36 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
     await signOut(window.auth);
 });
 
-// ===== مسح المخزون (السلات فردية الآن، لا حاجة لمسحها من هنا) =====
 document.getElementById('clearCartBtn').addEventListener('click', async () => {
-    if (confirm('هل أنت متأكد من إعادة ضبط المخزون؟ (الطلبات تُدار من Firestore مباشرة)')) {
-        await saveStock({});
-        await renderStockItems();
-        alert('✓ تم إعادة ضبط المخزون');
+
+    if (!confirm('هل أنت متأكد من مسح كل البيانات؟')) return;
+
+    const {
+        collection,
+        getDocs,
+        deleteDoc,
+        doc
+    } = await import(
+        "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
+    );
+
+    // clear stock
+    await saveStock({});
+
+    // clear orders
+    const snapshot = await getDocs(
+        collection(window.db, "orders")
+    );
+
+    for (const orderDoc of snapshot.docs) {
+        await deleteDoc(
+            doc(window.db, "orders", orderDoc.id)
+        );
     }
+
+    await renderStockItems();
+
+    alert("✓ تم مسح جميع البيانات");
 });
 
 // ===== مراقبة حالة تسجيل الدخول =====

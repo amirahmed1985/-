@@ -23,19 +23,26 @@ function saveCart(cart) {
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
 }
 
-// ===== تحميل بيانات المخزون من Firestore (مشتركة بين جميع الزوار) =====
 async function loadStockFromFirestore() {
     try {
-        const { doc, getDoc } = await import(
+        const { doc, onSnapshot } = await import(
             "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
         );
-        const snap = await getDoc(doc(window.db, 'state', 'stock'));
-        cachedStock = snap.exists() ? snap.data() : {};
+
+        onSnapshot(
+            doc(window.db, 'state', 'stock'),
+            (snap) => {
+                cachedStock = snap.exists()
+                    ? snap.data()
+                    : {};
+
+                location.reload();
+            }
+        );
+
     } catch (e) {
-        console.error('تعذر تحميل بيانات المخزون:', e);
-        cachedStock = {};
+        console.error('تعذر تحميل المخزون:', e);
     }
-    return cachedStock;
 }
 
 // ===== تحديث عدد العناصر في الزر =====
