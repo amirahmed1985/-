@@ -277,7 +277,6 @@
 </head>
 <body>
 
-    <!-- ===== Login Screen ===== -->
     <div class="login-container" id="loginScreen">
         <form class="login-form" id="loginForm">
             <h1>لوحة التحكم</h1>
@@ -304,7 +303,6 @@
         </form>
     </div>
 
-    <!-- ===== Dashboard Screen ===== -->
     <div class="admin-dashboard" id="adminDashboard">
         <div class="admin-header">
             <h1>قبضة الدواء — لوحة التحكم</h1>
@@ -312,7 +310,6 @@
         </div>
 
         <div class="admin-content">
-            <!-- Statistics -->
             <div class="admin-section">
                 <h2>الإحصائيات</h2>
                 <div class="stats-grid">
@@ -327,7 +324,6 @@
                 </div>
             </div>
 
-            <!-- Orders Section -->
             <div class="admin-section">
                 <h2>الطلبات المستلمة</h2>
                 <div id="ordersContents">
@@ -335,7 +331,6 @@
                 </div>
             </div>
 
-            <!-- Stock Management -->
             <div class="admin-section">
                 <h2>إدارة المخزون</h2>
                 <div class="search-box">
@@ -351,7 +346,6 @@
                 </div>
             </div>
 
-            <!-- Admin Actions -->
             <div class="admin-section">
                 <h2>إجراءات</h2>
                 <button class="clear-btn" id="clearCartBtn">مسح جميع البيانات</button>
@@ -359,11 +353,7 @@
         </div>
     </div>
 
-    <div id="adminStockContainer">
-    <!-- المنتجات والأرقام ستظهر هنا تلقائياً لتتحكم بها -->
-</div>
-
     <script type="module" src="firebase-init.js"></script>
-    <script src="admin.js"></script>
+    <script type="module" src="admin.js"></script> 
 </body>
 </html>
