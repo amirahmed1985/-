@@ -2,6 +2,22 @@
 let currentSearchQuery = '';
 let unsubOrders = null;
 
+// ===== انتظار تهيئة Firebase =====
+function waitForFirebase() {
+    return new Promise((resolve) => {
+        if (window.auth && window.db) {
+            resolve();
+            return;
+        }
+        const interval = setInterval(() => {
+            if (window.auth && window.db) {
+                clearInterval(interval);
+                resolve();
+            }
+        }, 50);
+    });
+}
+
 // ===== تحويل الأرقام للعربية =====
 function toArabicDigits(num) {
     const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
@@ -46,7 +62,7 @@ async function saveStock(stock) {
     await setDoc(doc(window.db, 'state', 'stock'), stock);
 }
 
-// ===== عرض عناصر المخزون مع البحث =====
+// ===== عرض عناصر المخزون =====
 async function renderStockItems(productsToShow = null) {
     const stockContents = document.getElementById('stockContents');
     const productsByCategory = getProductsByCategory();
@@ -64,16 +80,12 @@ async function renderStockItems(productsToShow = null) {
     Object.keys(productsByCategory).forEach(category => {
         const categoryLabel = categoryInfo[category];
         let products = productsByCategory[category];
-
-        if (productsToShow) {
-            products = products.filter(p => productsToShow.includes(p));
-        }
-
+        if (productsToShow) products = products.filter(p => productsToShow.includes(p));
         if (products.length === 0) return;
         totalFound += products.length;
 
         html += `
-            <div style="background: linear-gradient(135deg, rgba(59, 92, 58, 0.05), rgba(217, 142, 59, 0.05)); border: 2px solid rgba(59, 92, 58, 0.2); border-radius: 12px; padding: 1.5rem; overflow: hidden;">
+            <div style="background: linear-gradient(135deg, rgba(59,92,58,0.05), rgba(217,142,59,0.05)); border: 2px solid rgba(59,92,58,0.2); border-radius: 12px; padding: 1.5rem;">
                 <h3 style="font-family: 'El Messiri', sans-serif; color: var(--deep); margin-top: 0; margin-bottom: 1.5rem; font-size: 1.3rem; display: flex; align-items: center; gap: 0.7rem;">
                     <span style="font-size: 1.8rem;">${categoryLabel.icon}</span>
                     ${categoryLabel.name}
@@ -82,12 +94,11 @@ async function renderStockItems(productsToShow = null) {
                     ${products.map(product => {
                         const isInStock = stock[product] !== false;
                         return `
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(255, 255, 255, 0.7); border-radius: 8px; border: 1px solid rgba(59, 92, 58, 0.1);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: rgba(255,255,255,0.7); border-radius: 8px; border: 1px solid rgba(59,92,58,0.1);">
                                 <div>
                                     <div style="font-weight: 600; color: var(--ink); font-size: 0.95rem;">${product}</div>
-                                    <div style="font-size: 0.8rem; color: var(--ink-soft); margin-top: 0.4rem; display: flex; align-items: center; gap: 0.4rem;">
-                                        <span style="font-size: 1rem;">${isInStock ? '✓' : '✕'}</span>
-                                        ${isInStock ? '<span style="color: var(--deep);">متوفر في المخزون</span>' : '<span style="color: var(--clay);">غير متوفر</span>'}
+                                    <div style="font-size: 0.8rem; color: var(--ink-soft); margin-top: 0.4rem;">
+                                        ${isInStock ? '✓ <span style="color:var(--deep);">متوفر</span>' : '✕ <span style="color:var(--clay);">غير متوفر</span>'}
                                     </div>
                                 </div>
                                 <button class="stock-toggle-btn" data-product="${product}" style="padding: 0.6rem 1.2rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; background: ${isInStock ? 'var(--deep)' : 'var(--amber)'}; color: var(--paper); white-space: nowrap;">
@@ -124,18 +135,14 @@ async function renderStockItems(productsToShow = null) {
 function setupStockSearch() {
     const searchInput = document.getElementById('stockSearch');
     if (!searchInput) return;
-
     searchInput.value = currentSearchQuery;
-
     searchInput.addEventListener('input', (e) => {
         const query = e.target.value.toLowerCase().trim();
         currentSearchQuery = query;
-        const allProducts = getAllProducts();
-
         if (query === '') {
             renderStockItems();
         } else {
-            const filtered = allProducts.filter(product => product.toLowerCase().includes(query));
+            const filtered = getAllProducts().filter(p => p.toLowerCase().includes(query));
             renderStockItems(filtered);
         }
     });
@@ -145,11 +152,9 @@ function setupStockSearch() {
 function renderOrder(order, index, total) {
     const s = order.shippingData || {};
     return `
-        <div style="background: rgba(59, 92, 58, 0.05); padding: 1.2rem; border-radius: 6px; margin-bottom: 1rem; border: 1px solid rgba(59, 92, 58, 0.1);">
+        <div style="background: rgba(59,92,58,0.05); padding: 1.2rem; border-radius: 6px; margin-bottom: 1rem; border: 1px solid rgba(59,92,58,0.1);">
             <div style="font-weight: 600; color: var(--deep); margin-bottom: 0.8rem;">الطلب #${toArabicDigits(total - index)}</div>
-            <div style="font-size: 0.9rem; color: var(--ink-soft); margin-bottom: 0.5rem;">
-                <strong>الوقت:</strong> ${s.timestamp || '—'}
-            </div>
+            <div style="font-size: 0.9rem; color: var(--ink-soft); margin-bottom: 0.5rem;"><strong>الوقت:</strong> ${s.timestamp || '—'}</div>
             <table class="cart-table" style="margin-top: 0.8rem;">
                 <tr><td><strong>الاسم:</strong></td><td>${s.fullName || ''}</td></tr>
                 <tr><td><strong>الهاتف:</strong></td><td>${s.phone || ''}</td></tr>
@@ -157,41 +162,33 @@ function renderOrder(order, index, total) {
                 <tr><td><strong>المدينة:</strong></td><td>${s.city || ''}</td></tr>
                 <tr><td><strong>العنوان:</strong></td><td>${s.address || ''}</td></tr>
             </table>
-            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(59, 92, 58, 0.1);">
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(59,92,58,0.1);">
                 <div style="font-weight: 600; margin-bottom: 0.5rem;">المنتجات:</div>
                 <ul style="margin: 0; padding-right: 1.5rem;">
-                    ${(order.items || []).map(item => `
-                        <li>${item.name} × ${toArabicDigits(item.qty)} = ${toArabicDigits(item.price * item.qty)} ر.س.</li>
-                    `).join('')}
+                    ${(order.items || []).map(item => `<li>${item.name} × ${toArabicDigits(item.qty)} = ${toArabicDigits(item.price * item.qty)} ر.س.</li>`).join('')}
                 </ul>
             </div>
         </div>
     `;
 }
 
-// ===== الاستماع الحي للطلبات من Firestore =====
+// ===== الاستماع الحي للطلبات =====
 async function listenToOrders() {
     const { collection, query, orderBy, onSnapshot } = await import(
         "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
     );
-
     const ordersContents = document.getElementById('ordersContents');
     const q = query(collection(window.db, 'orders'), orderBy('createdAt', 'desc'));
-
     if (unsubOrders) unsubOrders();
-
     unsubOrders = onSnapshot(q, (snapshot) => {
         const orders = [];
         snapshot.forEach(docSnap => orders.push(docSnap.data()));
-
         if (orders.length === 0) {
             ordersContents.innerHTML = '<p class="empty-message">لا توجد طلبات</p>';
         } else {
             ordersContents.innerHTML = orders.map((order, idx) => renderOrder(order, idx, orders.length)).join('');
         }
-
-        let totalItems = 0;
-        let totalPrice = 0;
+        let totalItems = 0, totalPrice = 0;
         orders.forEach(order => {
             (order.items || []).forEach(item => {
                 totalItems += item.qty;
@@ -202,18 +199,17 @@ async function listenToOrders() {
         document.getElementById('totalPrice').textContent = `${toArabicDigits(totalPrice)} ر.س.`;
     }, (err) => {
         console.error('فشل تحميل الطلبات:', err);
-        ordersContents.innerHTML = '<p class="empty-message">تعذر تحميل الطلبات، تحقق من تسجيل الدخول</p>';
+        ordersContents.innerHTML = '<p class="empty-message">تعذر تحميل الطلبات</p>';
     });
 }
 
-// ===== عرض شاشة تسجيل الدخول =====
+// ===== عرض/إخفاء الشاشات =====
 function showLogin() {
     document.getElementById('loginScreen').style.display = 'flex';
     document.getElementById('adminDashboard').style.display = 'none';
     if (unsubOrders) { unsubOrders(); unsubOrders = null; }
 }
 
-// ===== عرض لوحة التحكم =====
 async function showDashboard() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('adminDashboard').style.display = 'block';
@@ -222,49 +218,49 @@ async function showDashboard() {
     await listenToOrders();
 }
 
-// ===== معالجة تسجيل الدخول عبر Firebase Auth =====
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('email')?.value;
-    const password = document.getElementById('password').value;
-    const errorMsg = document.getElementById('errorMsg');
-
-    try {
-        const { signInWithEmailAndPassword } = await import(
-            "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"
-        );
-        await signInWithEmailAndPassword(window.auth, email, password);
-        errorMsg.textContent = '';
-    } catch (err) {
-        console.error(err);
-        errorMsg.textContent = '❌ بيانات الدخول غير صحيحة';
-        document.getElementById('password').value = '';
-    }
-});
-
-// ===== تسجيل الخروج =====
-document.getElementById('logoutBtn').addEventListener('click', async () => {
-    const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
-    await signOut(window.auth);
-});
-
-// ===== مسح المخزون (السلات فردية الآن، لا حاجة لمسحها من هنا) =====
-document.getElementById('clearCartBtn').addEventListener('click', async () => {
-    if (confirm('هل أنت متأكد من إعادة ضبط المخزون؟ (الطلبات تُدار من Firestore مباشرة)')) {
-        await saveStock({});
-        await renderStockItems();
-        alert('✓ تم إعادة ضبط المخزون');
-    }
-});
-
-// ===== مراقبة حالة تسجيل الدخول =====
+// ===== تشغيل كل شيء بعد تحميل Firebase =====
 window.addEventListener('load', async () => {
+    await waitForFirebase();
+
+    // مراقبة حالة تسجيل الدخول
     const { onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
     onAuthStateChanged(window.auth, (user) => {
         if (user) {
             showDashboard();
         } else {
             showLogin();
+        }
+    });
+
+    // تسجيل الدخول
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const errorMsg = document.getElementById('errorMsg');
+        try {
+            const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+            await signInWithEmailAndPassword(window.auth, email, password);
+            errorMsg.textContent = '';
+        } catch (err) {
+            console.error(err);
+            errorMsg.textContent = '❌ بيانات الدخول غير صحيحة';
+            document.getElementById('password').value = '';
+        }
+    });
+
+    // تسجيل الخروج
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+        await signOut(window.auth);
+    });
+
+    // مسح المخزون
+    document.getElementById('clearCartBtn').addEventListener('click', async () => {
+        if (confirm('هل أنت متأكد من إعادة ضبط المخزون؟')) {
+            await saveStock({});
+            await renderStockItems();
+            alert('✓ تم إعادة ضبط المخزون');
         }
     });
 });

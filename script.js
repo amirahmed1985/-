@@ -8,7 +8,7 @@ function toArabicDigits(num) {
     return String(num).replace(/[0-9]/g, d => arabicDigits[d]);
 }
 
-// ===== تحميل السلة من التخزين المحلي (سلة الزائر تبقى محلية) =====
+// ===== تحميل السلة من التخزين المحلي =====
 function loadCart() {
     try {
         const saved = localStorage.getItem(CART_KEY);
@@ -23,6 +23,7 @@ function saveCart(cart) {
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
 }
 
+// ===== جلب المخزن الرقمي من Firestore =====
 async function loadStockFromFirestore() {
     try {
         const { doc, getDoc } = await import(
@@ -47,7 +48,7 @@ function updateCartCount() {
     }
 }
 
-// ===== تحديث عرض السلة =====
+// ===== تحديث عرض السلة والتحكم في الكميات الرقمية =====
 function renderCart() {
     const cart = loadCart();
     const cartItemsEl = document.getElementById('cartItems');
@@ -77,10 +78,23 @@ function renderCart() {
         const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
         cartTotalEl.textContent = `${toArabicDigits(total)} ر.س.`;
 
+        // زر زيادة الكمية مع التحقق من الحد الأقصى للمخزن المتاح
         document.querySelectorAll('.qty-increase').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const idx = parseInt(e.target.dataset.index);
+                const itemName = cart[idx].name;
+                
+                // جلب المتاح في المخزن وتحويله لرقم آمن
+                let maxAvailable = cachedStock[itemName];
+                if (maxAvailable === undefined || maxAvailable === true || maxAvailable === false) maxAvailable = 0;
+                maxAvailable = Number(maxAvailable);
+
+                if (cart[idx].qty >= maxAvailable) {
+                    alert(`عذراً، لا يمكنك إضافة المزيد. المتاح في المخزن من (${itemName}) هو ${toArabicDigits(maxAvailable)} قطع فقط.`);
+                    return;
+                }
+
                 cart[idx].qty++;
                 saveCart(cart);
                 renderCart();
@@ -116,10 +130,21 @@ function renderCart() {
     }
 }
 
-// ===== إضافة العنصر إلى السلة =====
-function addToCart(name, price) {
+// ===== إضافة العنصر إلى السلة بالاعتماد على التوافر الرقمي =====
+function addToCart(name, price, event) {
     let cart = loadCart();
     const existing = cart.find(item => item.name === name);
+    const currentCartQty = existing ? existing.qty : 0;
+
+    // فحص المخزن الرقمي المتاح
+    let maxAvailable = cachedStock[name];
+    if (maxAvailable === undefined || maxAvailable === true || maxAvailable === false) maxAvailable = 0;
+    maxAvailable = Number(maxAvailable);
+
+    if (currentCartQty + 1 > maxAvailable) {
+        alert(`عذراً، نفدت الكمية المتاحة للإضافة من هذا المنتج. المتاح: (${toArabicDigits(maxAvailable)}) قطع.`);
+        return;
+    }
 
     if (existing) {
         existing.qty++;
@@ -132,15 +157,16 @@ function addToCart(name, price) {
     updateCartCount();
 
     const btn = event.target;
+    const originalText = btn.textContent;
     btn.textContent = '✓ تمت الإضافة';
     btn.style.backgroundColor = 'var(--amber)';
     setTimeout(() => {
-        btn.textContent = 'أضف للسلة';
+        btn.textContent = originalText;
         btn.style.backgroundColor = '';
     }, 1500);
 }
 
-// ===== التعامل مع زر السلة واللوحة =====
+// ===== التعامل مع زر السلة واللوحة الجانبية =====
 function initCartToggle() {
     const cartToggle = document.getElementById('cartToggle');
     const cartClose = document.getElementById('cartClose');
@@ -172,30 +198,39 @@ function initCartToggle() {
     });
 }
 
-// ===== تعريف أزرار إضافة للسلة حسب المخزون المشترك =====
+// ===== تعريف وإدارة أزرار الشراء بناءً على الأرقام الفعلية للمخزون =====
 function initAddToCartButtons() {
     const addButtons = document.querySelectorAll('.add-to-cart');
 
     addButtons.forEach(btn => {
         const name = btn.dataset.name;
         const price = btn.dataset.price;
-        const isInStock = cachedStock[name] !== false;
+        
+        // التحقق مما إذا كانت كمية المنتج أكبر من صفر
+        let currentStockQty = cachedStock[name];
+        if (currentStockQty === undefined || currentStockQty === true) currentStockQty = 0;
+        if (currentStockQty === false) currentStockQty = 0;
+        currentStockQty = Number(currentStockQty);
+
+        const isInStock = currentStockQty > 0;
 
         const newBtn = btn.cloneNode(true);
         btn.parentNode.replaceChild(newBtn, btn);
 
         if (!isInStock) {
-            newBtn.textContent = 'غير متوفر';
+            newBtn.textContent = 'نفدت الكمية';
             newBtn.disabled = true;
             newBtn.style.opacity = '0.5';
             newBtn.style.cursor = 'not-allowed';
+            newBtn.style.background = 'var(--line)';
+            newBtn.style.color = 'var(--ink-soft)';
         } else {
             newBtn.textContent = 'أضف للسلة';
             newBtn.disabled = false;
             newBtn.style.opacity = '1';
             newBtn.style.cursor = 'pointer';
-            newBtn.addEventListener('click', function () {
-                addToCart(name, price);
+            newBtn.addEventListener('click', function (e) {
+                addToCart(name, price, e);
             });
         }
     });
@@ -205,15 +240,16 @@ function initAddToCartButtons() {
 async function refreshStockAndButtons() {
     await loadStockFromFirestore();
     initAddToCartButtons();
+    renderCart(); // تحديث السلة لتتطابق مع البيانات الجديدة عند الحاجة
 }
 
-// ===== تهيئة البدء =====
+// ===== تهيئة البدء عند تحميل الصفحة =====
 document.addEventListener('DOMContentLoaded', async () => {
     renderCart();
     updateCartCount();
     initCartToggle();
     await refreshStockAndButtons();
 
-    // تحديث حالة المخزون كل ١٠ ثوانٍ (بدلاً من كل ثانيتين، لتقليل القراءات من Firestore)
+    // تحديث ذكي ومستقر كل ١٠ ثوانٍ للمخزن
     setInterval(refreshStockAndButtons, 10000);
 });

@@ -1,6 +1,7 @@
-// ===== إعدادات =====
+// ===== استيراد دوال Firebase الضرورية =====
+import { doc, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 const CART_KEY = 'qabdat_aldawa_cart';
-const SHIPPING_COST = 20;
 
 // ===== تحويل الأرقام للعربية =====
 function toArabicDigits(num) {
@@ -8,7 +9,7 @@ function toArabicDigits(num) {
     return String(num).replace(/[0-9]/g, d => arabicDigits[d]);
 }
 
-// ===== تحميل السلة =====
+// ===== تحميل السلة من التخزين المحلي =====
 function loadCart() {
     try {
         const saved = localStorage.getItem(CART_KEY);
@@ -18,110 +19,109 @@ function loadCart() {
     }
 }
 
-// ===== حفظ السلة =====
-function saveCart(cart) {
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+// ===== تفريغ السلة بعد نجاح الطلب =====
+function clearCart() {
+    localStorage.removeItem(CART_KEY);
 }
 
-// ===== عرض ملخص الطلب =====
+// ===== عرض ملخص الطلب في صفحة الدفع =====
 function renderSummary() {
     const cart = loadCart();
     const summaryItemsEl = document.getElementById('summaryItems');
-    const summarySubtotalEl = document.getElementById('summarySubtotal');
-    const summaryShippingEl = document.getElementById('summaryShipping');
     const summaryTotalEl = document.getElementById('summaryTotal');
-    const submitBtn = document.querySelector('.checkout__submit');
+
+    if (!summaryItemsEl || !summaryTotalEl) return;
 
     if (cart.length === 0) {
-        summaryItemsEl.innerHTML = '<p class="cart-empty">سلتك فارغة</p>';
-        summarySubtotalEl.textContent = '٠ ر.س.';
+        summaryItemsEl.innerHTML = '<p style="text-align:center; color:var(--ink-soft);">السلة فارغة</p>';
         summaryTotalEl.textContent = '٠ ر.س.';
-        if (submitBtn) submitBtn.disabled = true;
-        return 0;
+        return;
     }
 
     summaryItemsEl.innerHTML = cart.map(item => `
         <div class="summary-item">
-            <span>${item.name} × ${toArabicDigits(item.qty)}</span>
+            <span>${item.name} (x${toArabicDigits(item.qty)})</span>
             <span>${toArabicDigits(item.price * item.qty)} ر.س.</span>
         </div>
     `).join('');
 
-    const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-    const total = subtotal + SHIPPING_COST;
-
-    summarySubtotalEl.textContent = `${toArabicDigits(subtotal)} ر.س.`;
-    summaryShippingEl.textContent = `${toArabicDigits(SHIPPING_COST)} ر.س.`;
+    const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
     summaryTotalEl.textContent = `${toArabicDigits(total)} ر.س.`;
-    if (submitBtn) submitBtn.disabled = false;
-
-    return total;
 }
 
-// ===== إرسال الطلب إلى Firestore =====
-async function submitOrder(shippingData, cart, total) {
-    const { collection, addDoc, serverTimestamp } = await import(
-        "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
-    );
+// ===== معالجة الدفع والخصم الآمن من المخزون =====
+async function handleCheckout(event) {
+    event.preventDefault();
+    
+    const cart = loadCart();
+    if (cart.length === 0) {
+        alert('سلتك فارغة! لا يمكن إتمام الطلب.');
+        return;
+    }
 
-    const order = {
-        shippingData: {
-            ...shippingData,
-            timestamp: new Date().toLocaleString('ar-SA')
-        },
-        items: cart,
-        total: total,
-        createdAt: serverTimestamp()
-    };
-
-    await addDoc(collection(window.db, 'orders'), order);
-}
-
-// ===== معالجة إرسال النموذج =====
-function initCheckoutForm() {
-    const form = document.getElementById('checkoutForm');
-    if (!form) return;
-
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const cart = loadCart();
-        if (cart.length === 0) {
-            alert('سلتك فارغة، أضف منتجات أولاً.');
-            return;
-        }
-
-        const formData = new FormData(form);
-        const shippingData = {
-            fullName: formData.get('fullName'),
-            phone: formData.get('phone'),
-            email: formData.get('email'),
-            city: formData.get('city'),
-            address: formData.get('address')
-        };
-
-        const total = renderSummary();
-        const submitBtn = form.querySelector('.checkout__submit');
-        const originalText = submitBtn.textContent;
+    const submitBtn = document.getElementById('submitOrderBtn') || document.querySelector('.checkout__submit');
+    if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'جارٍ إرسال الطلب...';
+        submitBtn.textContent = 'جاري معالجة الطلب...';
+        submitBtn.style.opacity = '0.7';
+    }
 
-        try {
-            await submitOrder(shippingData, cart, total);
-            localStorage.removeItem(CART_KEY);
-            alert('✓ تم استلام طلبك بنجاح! سيتواصل معك فريقنا قريباً.');
-            window.location.href = 'index.html';
-        } catch (err) {
-            console.error('فشل إرسال الطلب:', err);
-            alert('حدث خطأ أثناء إرسال الطلب، يرجى المحاولة مرة أخرى.');
+    try {
+        const stockRef = doc(window.db, 'state', 'stock');
+        
+        // استخدام Transaction لضمان الخصم الدقيق وعدم تعارض الطلبات
+        await runTransaction(window.db, async (transaction) => {
+            const stockDoc = await transaction.get(stockRef);
+            if (!stockDoc.exists()) {
+                throw "عذراً، بيانات المخزون غير متوفرة حالياً.";
+            }
+
+            let currentStock = stockDoc.data();
+            let updates = {};
+
+            // فحص توفر الكميات لكل منتج في السلة
+            for (let item of cart) {
+                let available = Number(currentStock[item.name]) || 0;
+                
+                if (available < item.qty) {
+                    throw `عذراً، الكمية المطلوبة من (${item.name}) غير متوفرة. المتاح حالياً هو: ${toArabicDigits(available)} قطع.`;
+                }
+                // تجهيز الكمية الجديدة بعد الخصم
+                updates[item.name] = available - item.qty;
+            }
+
+            // تنفيذ الخصم الفعلي في قاعدة البيانات
+            transaction.update(stockRef, updates);
+        });
+
+        // نجاح العملية
+        alert('تم تأكيد طلبك بنجاح! شكراً لتسوقك من قبضة الدواء.');
+        clearCart();
+        window.location.href = 'index.html'; // العودة للصفحة الرئيسية
+        
+    } catch (error) {
+        console.error("خطأ في معالجة الطلب:", error);
+        alert(typeof error === 'string' ? error : 'حدث خطأ أثناء معالجة الطلب، يرجى المحاولة مرة أخرى لاحقاً.');
+        
+        if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.textContent = originalText;
+            submitBtn.textContent = 'إتمام الطلب';
+            submitBtn.style.opacity = '1';
         }
-    });
+    }
 }
 
-// ===== تهيئة =====
+// ===== تهيئة الصفحة عند التحميل =====
 document.addEventListener('DOMContentLoaded', () => {
     renderSummary();
-    initCheckoutForm();
+    const checkoutForm = document.getElementById('checkoutForm');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', handleCheckout);
+    } else {
+        // دعم احتياطي في حال كان زر الإرسال خارج الفورم
+        const submitBtn = document.getElementById('submitOrderBtn') || document.querySelector('.checkout__submit');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', handleCheckout);
+        }
+    }
 });
