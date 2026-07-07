@@ -1,43 +1,59 @@
 import { doc, getDoc, setDoc, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// ===== المتغيرات الأساسية =====
-let unsubOrders = null;
+// ===== قائمة المنتجات حسب التصنيف =====
+function getCategories() {
+    return {
+        'الكلاب': [
+            'Bio Alpha', 'Bio BK Choline', 'BioVita', 'Bio Nox', 'Vinocid',
+            'Bio Thyme', 'Bio Phospho D', 'Bio Minerals', 'Bio E Selenium 20%', 'Bio AD3E Plus'
+        ],
+        'القطط': [
+            'Bio Alpha', 'Bio BK Choline', 'BioVita', 'Bio Nox', 'Vinocid',
+            'Bio Thyme', 'Bio Phospho D', 'Bio Minerals', 'Bio E Selenium 20%', 'Bio AD3E Plus'
+        ],
+        'الطيور': [
+            'Bio Alpha — طيور', 'Bio BK Choline — طيور', 'BioVita — طيور', 'Bio Nox — طيور', 'Vinocid — طيور',
+            'Bio Thyme — طيور', 'Bio Phospho D — طيور', 'Bio Minerals — طيور', 'Bio E Selenium 20% — طيور', 'Bio AD3E Plus — طيور'
+        ]
+    };
+}
 
-// ===== دالة عرض المخزون (التصميم الكلاسيكي) =====
+// ===== دالة عرض المخزون =====
 async function renderStockItems() {
     const stockContents = document.getElementById('stockContents');
     if (!stockContents) return;
 
-    // جلب حالة المخزون
+    // جلب حالة المخزون الحالية
     const snap = await getDoc(doc(window.db, 'state', 'stock'));
     const stock = snap.exists() ? snap.data() : {};
 
-    // قائمة المنتجات الثابتة
-    const products = [
-        'Bio Alpha', 'Bio BK Choline', 'BioVita', 'Bio Nox', 'Vinocid',
-        'Bio Thyme', 'Bio Phospho D', 'Bio Minerals', 'Bio E Selenium 20%', 'Bio AD3E Plus'
-    ];
+    const categories = getCategories();
+    let html = '';
 
-    let html = '<div style="display: grid; gap: 10px;">';
+    // بناء التصنيفات
+    for (const [catName, products] of Object.entries(categories)) {
+        html += `<h3 style="margin: 20px 0 10px; border-bottom: 2px solid #ccc; padding-bottom: 5px;">${catName}</h3>`;
+        html += '<div style="display: grid; gap: 10px; margin-bottom: 20px;">';
+        
+        products.forEach(product => {
+            const isAvailable = stock[product] !== false;
+            html += `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #fff; border: 1px solid #ccc; border-radius: 4px;">
+                    <span style="font-weight: bold;">${product}</span>
+                    <button class="toggle-btn" data-product="${product}" data-status="${isAvailable}" 
+                            style="padding: 8px 20px; cursor: pointer; color: white; border: none; border-radius: 4px; background: ${isAvailable ? '#28a745' : '#dc3545'};">
+                        ${isAvailable ? 'متوفر' : 'غير متوفر'}
+                    </button>
+                </div>
+            `;
+        });
+        html += '</div>';
+    }
     
-    products.forEach(product => {
-        const isAvailable = stock[product] !== false;
-        html += `
-            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #fff; border: 1px solid #ccc; border-radius: 4px;">
-                <span>${product}</span>
-                <button class="toggle-btn" data-product="${product}" data-status="${isAvailable}" 
-                        style="padding: 8px 20px; cursor: pointer; color: white; border: none; border-radius: 4px; background: ${isAvailable ? '#28a745' : '#dc3545'};">
-                    ${isAvailable ? 'متوفر' : 'غير متوفر'}
-                </button>
-            </div>
-        `;
-    });
-    
-    html += '</div>';
     stockContents.innerHTML = html;
 
-    // إضافة أحداث الضغط للأزرار
+    // تفعيل الأزرار
     document.querySelectorAll('.toggle-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             const product = e.target.dataset.product;
@@ -49,7 +65,7 @@ async function renderStockItems() {
             e.target.style.background = newStatus ? '#28a745' : '#dc3545';
             e.target.dataset.status = newStatus;
 
-            // حفظ في Firebase
+            // تحديث Firebase
             const currentStock = (await getDoc(doc(window.db, 'state', 'stock'))).data() || {};
             currentStock[product] = newStatus;
             await setDoc(doc(window.db, 'state', 'stock'), currentStock);
@@ -57,12 +73,12 @@ async function renderStockItems() {
     });
 }
 
-// ===== تهيئة تسجيل الدخول (مع منع Refresh) =====
+// ===== تهيئة تسجيل الدخول =====
 function initAuth() {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault(); // هذا السطر يمنع إعادة تحميل الصفحة
+            e.preventDefault(); 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             try {
@@ -85,5 +101,4 @@ function initAuth() {
     });
 }
 
-// تشغيل النظام
 initAuth();
