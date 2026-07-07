@@ -85,9 +85,10 @@ function renderCart() {
                 const idx = parseInt(e.target.dataset.index);
                 const itemName = cart[idx].name;
                 
-                // جلب المتاح في المخزن وتحويله لرقم آمن
+                // قيمة افتراضية آمنة (10 قطع) إذا كانت البيانات غير محددة لمنع الإغلاق التلقائي
                 let maxAvailable = cachedStock[itemName];
-                if (maxAvailable === undefined || maxAvailable === true || maxAvailable === false) maxAvailable = 0;
+                if (maxAvailable === undefined || maxAvailable === true) maxAvailable = 10;
+                if (maxAvailable === false) maxAvailable = 0;
                 maxAvailable = Number(maxAvailable);
 
                 if (cart[idx].qty >= maxAvailable) {
@@ -136,9 +137,10 @@ function addToCart(name, price, event) {
     const existing = cart.find(item => item.name === name);
     const currentCartQty = existing ? existing.qty : 0;
 
-    // فحص المخزن الرقمي المتاح
+    // قيمة افتراضية آمنة (10 قطع) لمنع ظهور "نفدت الكمية" بالخطأ
     let maxAvailable = cachedStock[name];
-    if (maxAvailable === undefined || maxAvailable === true || maxAvailable === false) maxAvailable = 0;
+    if (maxAvailable === undefined || maxAvailable === true) maxAvailable = 10;
+    if (maxAvailable === false) maxAvailable = 0;
     maxAvailable = Number(maxAvailable);
 
     if (currentCartQty + 1 > maxAvailable) {
@@ -206,9 +208,9 @@ function initAddToCartButtons() {
         const name = btn.dataset.name;
         const price = btn.dataset.price;
         
-        // التحقق مما إذا كانت كمية المنتج أكبر من صفر
+        // هنا التعديل السحري: إذا كانت القيمة غير موجودة أو true، يعطيه كمية 10 تلقائياً ليبقى الزر فعالاً!
         let currentStockQty = cachedStock[name];
-        if (currentStockQty === undefined || currentStockQty === true) currentStockQty = 0;
+        if (currentStockQty === undefined || currentStockQty === true) currentStockQty = 10;
         if (currentStockQty === false) currentStockQty = 0;
         currentStockQty = Number(currentStockQty);
 
@@ -229,6 +231,8 @@ function initAddToCartButtons() {
             newBtn.disabled = false;
             newBtn.style.opacity = '1';
             newBtn.style.cursor = 'pointer';
+            newBtn.style.background = ''; // العودة للتصميم الطبيعي الأنيق
+            newBtn.style.color = '';
             newBtn.addEventListener('click', function (e) {
                 addToCart(name, price, e);
             });
@@ -240,7 +244,7 @@ function initAddToCartButtons() {
 async function refreshStockAndButtons() {
     await loadStockFromFirestore();
     initAddToCartButtons();
-    renderCart(); // تحديث السلة لتتطابق مع البيانات الجديدة عند الحاجة
+    renderCart();
 }
 
 // ===== تهيئة البدء عند تحميل الصفحة =====
@@ -250,6 +254,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     initCartToggle();
     await refreshStockAndButtons();
 
-    // تحديث ذكي ومستقر كل ١٠ ثوانٍ للمخزن
+    // تحديث مستقر كل ١٠ ثوانٍ للمخزن
     setInterval(refreshStockAndButtons, 10000);
 });
