@@ -1,11 +1,36 @@
-<div id="loginScreen">
-    <form id="loginForm">
-        <input type="email" id="email" placeholder="البريد الإلكتروني">
-        <input type="password" id="password" placeholder="كلمة المرور">
-        <button type="submit">دخول</button>
-    </form>
-</div>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        #loginScreen { display: flex; flex-direction: column; gap: 10px; }
+        input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px; cursor: pointer; border: none; border-radius: 4px; color: white; background: #3B5C3A; font-weight: bold; }
+        #adminDashboard { display: none; }
+        h2 { background: #333; color: white; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
 
-<div id="adminDashboard" style="display:none;">
-    <div id="stockContents"></div>
-</div>
+    <div class="container">
+        <div id="loginScreen">
+            <h2>تسجيل الدخول</h2>
+            <input type="email" id="email" placeholder="البريد الإلكتروني">
+            <input type="password" id="password" placeholder="كلمة المرور">
+            <button id="loginBtn">دخول</button>
+        </div>
+
+        <div id="adminDashboard">
+            <h2>إدارة المخزون</h2>
+            <div id="stockContents"></div>
+            <button onclick="window.location.reload()" style="background: #666; margin-top: 20px;">تحديث الصفحة</button>
+        </div>
+    </div>
+
+    <script type="module" src="admin.js"></script>
+</body>
+</html>
