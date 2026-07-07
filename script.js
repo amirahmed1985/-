@@ -8,7 +8,7 @@ function toArabicDigits(num) {
     return String(num).replace(/[0-9]/g, d => arabicDigits[d]);
 }
 
-// ===== تحميل السلة من التخزين المحلي =====
+// ===== تحميل السلة من التخزين المحلي (سلة الزائر تبقى محلية) =====
 function loadCart() {
     try {
         const saved = localStorage.getItem(CART_KEY);
@@ -23,7 +23,6 @@ function saveCart(cart) {
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
 }
 
-// ===== جلب المخزن الرقمي من Firestore =====
 async function loadStockFromFirestore() {
     try {
         const { doc, getDoc } = await import(
@@ -48,7 +47,7 @@ function updateCartCount() {
     }
 }
 
-// ===== تحديث عرض السلة والتحكم في الكميات الرقمية =====
+// ===== تحديث عرض السلة =====
 function renderCart() {
     const cart = loadCart();
     const cartItemsEl = document.getElementById('cartItems');
@@ -78,24 +77,10 @@ function renderCart() {
         const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
         cartTotalEl.textContent = `${toArabicDigits(total)} ر.س.`;
 
-        // زر زيادة الكمية مع التحقق من الحد الأقصى للمخزن المتاح
         document.querySelectorAll('.qty-increase').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const idx = parseInt(e.target.dataset.index);
-                const itemName = cart[idx].name;
-                
-                // قيمة افتراضية آمنة (10 قطع) إذا كانت البيانات غير محددة لمنع الإغلاق التلقائي
-                let maxAvailable = cachedStock[itemName];
-                if (maxAvailable === undefined || maxAvailable === true) maxAvailable = 10;
-                if (maxAvailable === false) maxAvailable = 0;
-                maxAvailable = Number(maxAvailable);
-
-                if (cart[idx].qty >= maxAvailable) {
-                    alert(`عذراً، لا يمكنك إضافة المزيد. المتاح في المخزن من (${itemName}) هو ${toArabicDigits(maxAvailable)} قطع فقط.`);
-                    return;
-                }
-
                 cart[idx].qty++;
                 saveCart(cart);
                 renderCart();
@@ -131,22 +116,10 @@ function renderCart() {
     }
 }
 
-// ===== إضافة العنصر إلى السلة بالاعتماد على التوافر الرقمي =====
-function addToCart(name, price, event) {
+// ===== إضافة العنصر إلى السلة =====
+function addToCart(name, price) {
     let cart = loadCart();
     const existing = cart.find(item => item.name === name);
-    const currentCartQty = existing ? existing.qty : 0;
-
-    // قيمة افتراضية آمنة (10 قطع) لمنع ظهور "نفدت الكمية" بالخطأ
-    let maxAvailable = cachedStock[name];
-    if (maxAvailable === undefined || maxAvailable === true) maxAvailable = 10;
-    if (maxAvailable === false) maxAvailable = 0;
-    maxAvailable = Number(maxAvailable);
-
-    if (currentCartQty + 1 > maxAvailable) {
-        alert(`عذراً، نفدت الكمية المتاحة للإضافة من هذا المنتج. المتاح: (${toArabicDigits(maxAvailable)}) قطع.`);
-        return;
-    }
 
     if (existing) {
         existing.qty++;
@@ -159,16 +132,15 @@ function addToCart(name, price, event) {
     updateCartCount();
 
     const btn = event.target;
-    const originalText = btn.textContent;
     btn.textContent = '✓ تمت الإضافة';
     btn.style.backgroundColor = 'var(--amber)';
     setTimeout(() => {
-        btn.textContent = originalText;
+        btn.textContent = 'أضف للسلة';
         btn.style.backgroundColor = '';
     }, 1500);
 }
 
-// ===== التعامل مع زر السلة واللوحة الجانبية =====
+// ===== التعامل مع زر السلة واللوحة =====
 function initCartToggle() {
     const cartToggle = document.getElementById('cartToggle');
     const cartClose = document.getElementById('cartClose');
@@ -200,41 +172,30 @@ function initCartToggle() {
     });
 }
 
-// ===== تعريف وإدارة أزرار الشراء بناءً على الأرقام الفعلية للمخزون =====
+// ===== تعريف أزرار إضافة للسلة حسب المخزون المشترك =====
 function initAddToCartButtons() {
     const addButtons = document.querySelectorAll('.add-to-cart');
 
     addButtons.forEach(btn => {
         const name = btn.dataset.name;
         const price = btn.dataset.price;
-        
-        // هنا التعديل السحري: إذا كانت القيمة غير موجودة أو true، يعطيه كمية 10 تلقائياً ليبقى الزر فعالاً!
-        let currentStockQty = cachedStock[name];
-        if (currentStockQty === undefined || currentStockQty === true) currentStockQty = 10;
-        if (currentStockQty === false) currentStockQty = 0;
-        currentStockQty = Number(currentStockQty);
-
-        const isInStock = currentStockQty > 0;
+        const isInStock = cachedStock[name] !== false;
 
         const newBtn = btn.cloneNode(true);
         btn.parentNode.replaceChild(newBtn, btn);
 
         if (!isInStock) {
-            newBtn.textContent = 'نفدت الكمية';
+            newBtn.textContent = 'غير متوفر';
             newBtn.disabled = true;
             newBtn.style.opacity = '0.5';
             newBtn.style.cursor = 'not-allowed';
-            newBtn.style.background = 'var(--line)';
-            newBtn.style.color = 'var(--ink-soft)';
         } else {
             newBtn.textContent = 'أضف للسلة';
             newBtn.disabled = false;
             newBtn.style.opacity = '1';
             newBtn.style.cursor = 'pointer';
-            newBtn.style.background = ''; // العودة للتصميم الطبيعي الأنيق
-            newBtn.style.color = '';
-            newBtn.addEventListener('click', function (e) {
-                addToCart(name, price, e);
+            newBtn.addEventListener('click', function () {
+                addToCart(name, price);
             });
         }
     });
@@ -244,16 +205,15 @@ function initAddToCartButtons() {
 async function refreshStockAndButtons() {
     await loadStockFromFirestore();
     initAddToCartButtons();
-    renderCart();
 }
 
-// ===== تهيئة البدء عند تحميل الصفحة =====
+// ===== تهيئة البدء =====
 document.addEventListener('DOMContentLoaded', async () => {
     renderCart();
     updateCartCount();
     initCartToggle();
     await refreshStockAndButtons();
 
-    // تحديث مستقر كل ١٠ ثوانٍ للمخزن
+    // تحديث حالة المخزون كل ١٠ ثوانٍ (بدلاً من كل ثانيتين، لتقليل القراءات من Firestore)
     setInterval(refreshStockAndButtons, 10000);
 });
