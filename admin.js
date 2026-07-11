@@ -1,14 +1,12 @@
 // ===== إعدادات لوحة التحكم =====
 let currentSearchQuery = '';
 let unsubOrders = null;
+let allOrdersCache = [];
 
 // ===== انتظار تهيئة Firebase =====
 function waitForFirebase() {
     return new Promise((resolve) => {
-        if (window.auth && window.db) {
-            resolve();
-            return;
-        }
+        if (window.auth && window.db) { resolve(); return; }
         const interval = setInterval(() => {
             if (window.auth && window.db) {
                 clearInterval(interval);
@@ -24,17 +22,21 @@ function toArabicDigits(num) {
     return String(num).replace(/[0-9]/g, d => arabicDigits[d]);
 }
 
-// ===== قائمة المنتجات =====
+// ===== قائمة المنتجات مقسّمة حسب الفئة =====
 function getAllProducts() {
     const byCat = getProductsByCategory();
-    return [...byCat.dogs_cats, ...byCat.birds, ...byCat.farm].sort();
+    return [...byCat.dogs, ...byCat.cats, ...byCat.birds, ...byCat.farm].sort();
 }
 
 function getProductsByCategory() {
     return {
-        dogs_cats: [
+        dogs: [
             'Bio Alpha', 'Bio BK Choline', 'BioVita', 'Bio Nox', 'Vinocid',
             'Bio Thyme', 'Bio Phospho D', 'Bio Minerals', 'Bio E Selenium 20%', 'Bio AD3E Plus'
+        ],
+        cats: [
+            'Bio Thyme — قطط', 'Bio Phospho D — قطط', 'Bio Minerals — قطط', 'Bio E Selenium 20% — قطط', 'Bio AD3E Plus — قطط',
+            'Bio Alpha — قطط', 'Bio BK Choline — قطط', 'BioVita — قطط', 'Bio Nox — قطط', 'Vinocid — قطط'
         ],
         birds: [
             'Bio Alpha — طيور', 'Bio BK Choline — طيور', 'BioVita — طيور', 'Bio Nox — طيور', 'Vinocid — طيور',
@@ -69,7 +71,8 @@ async function renderStockItems(productsToShow = null) {
     const stock = await loadStock();
 
     const categoryInfo = {
-        dogs_cats: { name: '🐕 كلاب وقطط', icon: '🐕' },
+        dogs: { name: '🐕 الكلاب', icon: '🐕' },
+        cats: { name: '🐱 القطط', icon: '🐱' },
         birds: { name: '🦜 الطيور', icon: '🦜' },
         farm: { name: '🐄 الحيوانات المزرعية', icon: '🐄' }
     };
@@ -148,12 +151,35 @@ function setupStockSearch() {
     });
 }
 
+// ===== إعداد تبويبات الطلبات =====
+function setupOrderTabs() {
+    document.querySelectorAll('.order-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.order-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.order-panel').forEach(p => p.classList.remove('active'));
+            tab.classList.add('active');
+            const targetId = tab.dataset.tab === 'pending' ? 'pendingPanel' : 'deliveredPanel';
+            document.getElementById(targetId).classList.add('active');
+        });
+    });
+}
+
 // ===== عرض طلب واحد =====
-function renderOrder(order, index, total) {
+function renderOrder(id, order, index, total, isDelivered) {
     const s = order.shippingData || {};
+    const actionBtn = isDelivered
+        ? `<button class="order-action-btn order-undo-btn" data-id="${id}" data-action="undo">↩ إعادة للحالية</button>`
+        : `<button class="order-action-btn order-deliver-btn" data-id="${id}" data-action="deliver">✓ تم التسليم</button>`;
+
     return `
-        <div style="background: rgba(59,92,58,0.05); padding: 1.2rem; border-radius: 6px; margin-bottom: 1rem; border: 1px solid rgba(59,92,58,0.1);">
-            <div style="font-weight: 600; color: var(--deep); margin-bottom: 0.8rem;">الطلب #${toArabicDigits(total - index)}</div>
+        <div class="order-card">
+            <div class="order-card__top">
+                <div style="font-weight: 600; color: var(--deep);">الطلب #${toArabicDigits(total - index)}</div>
+                <div class="order-card__actions">
+                    ${actionBtn}
+                    <button class="order-action-btn order-delete-btn" data-id="${id}" data-action="delete">🗑 حذف</button>
+                </div>
+            </div>
             <div style="font-size: 0.9rem; color: var(--ink-soft); margin-bottom: 0.5rem;"><strong>الوقت:</strong> ${s.timestamp || '—'}</div>
             <table class="cart-table" style="margin-top: 0.8rem;">
                 <tr><td><strong>الاسم:</strong></td><td>${s.fullName || ''}</td></tr>
@@ -172,34 +198,71 @@ function renderOrder(order, index, total) {
     `;
 }
 
+// ===== ربط أزرار التسليم/التراجع/الحذف =====
+function bindOrderActions() {
+    document.querySelectorAll('.order-action-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const id = e.currentTarget.dataset.id;
+            const action = e.currentTarget.dataset.action;
+            e.currentTarget.disabled = true;
+
+            const { doc, updateDoc, deleteDoc } = await import(
+                "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
+            );
+
+            try {
+                if (action === 'deliver') {
+                    await updateDoc(doc(window.db, 'orders', id), { status: 'delivered' });
+                } else if (action === 'undo') {
+                    await updateDoc(doc(window.db, 'orders', id), { status: 'pending' });
+                } else if (action === 'delete') {
+                    if (confirm('هل أنت متأكد من حذف هذا الطلب؟')) {
+                        await deleteDoc(doc(window.db, 'orders', id));
+                    } else {
+                        e.currentTarget.disabled = false;
+                    }
+                }
+            } catch (err) {
+                console.error('فشل تنفيذ الإجراء:', err);
+                e.currentTarget.disabled = false;
+            }
+        });
+    });
+}
+
+// ===== عرض الطلبات في اللوحتين =====
+function renderOrderLists() {
+    const pendingPanel = document.getElementById('pendingPanel');
+    const deliveredPanel = document.getElementById('deliveredPanel');
+
+    const pending = allOrdersCache.filter(o => o.data.status !== 'delivered');
+    const delivered = allOrdersCache.filter(o => o.data.status === 'delivered');
+
+    pendingPanel.innerHTML = pending.length === 0
+        ? '<p class="empty-message">لا توجد طلبات</p>'
+        : pending.map((o, idx) => renderOrder(o.id, o.data, idx, pending.length, false)).join('');
+
+    deliveredPanel.innerHTML = delivered.length === 0
+        ? '<p class="empty-message">لا توجد طلبات مكتملة</p>'
+        : delivered.map((o, idx) => renderOrder(o.id, o.data, idx, delivered.length, true)).join('');
+
+    bindOrderActions();
+}
+
 // ===== الاستماع الحي للطلبات =====
 async function listenToOrders() {
     const { collection, query, orderBy, onSnapshot } = await import(
         "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"
     );
-    const ordersContents = document.getElementById('ordersContents');
     const q = query(collection(window.db, 'orders'), orderBy('createdAt', 'desc'));
     if (unsubOrders) unsubOrders();
     unsubOrders = onSnapshot(q, (snapshot) => {
-        const orders = [];
-        snapshot.forEach(docSnap => orders.push(docSnap.data()));
-        if (orders.length === 0) {
-            ordersContents.innerHTML = '<p class="empty-message">لا توجد طلبات</p>';
-        } else {
-            ordersContents.innerHTML = orders.map((order, idx) => renderOrder(order, idx, orders.length)).join('');
-        }
-        let totalItems = 0, totalPrice = 0;
-        orders.forEach(order => {
-            (order.items || []).forEach(item => {
-                totalItems += item.qty;
-                totalPrice += item.price * item.qty;
-            });
-        });
-        document.getElementById('totalItems').textContent = toArabicDigits(totalItems);
-        document.getElementById('totalPrice').textContent = `${toArabicDigits(totalPrice)} ر.س.`;
+        allOrdersCache = [];
+        snapshot.forEach(docSnap => allOrdersCache.push({ id: docSnap.id, data: docSnap.data() }));
+        renderOrderLists();
     }, (err) => {
         console.error('فشل تحميل الطلبات:', err);
-        ordersContents.innerHTML = '<p class="empty-message">تعذر تحميل الطلبات</p>';
+        document.getElementById('pendingPanel').innerHTML = '<p class="empty-message">تعذر تحميل الطلبات</p>';
     });
 }
 
@@ -213,6 +276,7 @@ function showLogin() {
 async function showDashboard() {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('adminDashboard').style.display = 'block';
+    setupOrderTabs();
     await renderStockItems();
     setupStockSearch();
     await listenToOrders();
@@ -222,17 +286,11 @@ async function showDashboard() {
 window.addEventListener('load', async () => {
     await waitForFirebase();
 
-    // مراقبة حالة تسجيل الدخول
     const { onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
     onAuthStateChanged(window.auth, (user) => {
-        if (user) {
-            showDashboard();
-        } else {
-            showLogin();
-        }
+        if (user) { showDashboard(); } else { showLogin(); }
     });
 
-    // تسجيل الدخول
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('email').value;
@@ -249,18 +307,8 @@ window.addEventListener('load', async () => {
         }
     });
 
-    // تسجيل الخروج
     document.getElementById('logoutBtn').addEventListener('click', async () => {
         const { signOut } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
         await signOut(window.auth);
-    });
-
-    // مسح المخزون
-    document.getElementById('clearCartBtn').addEventListener('click', async () => {
-        if (confirm('هل أنت متأكد من إعادة ضبط المخزون؟')) {
-            await saveStock({});
-            await renderStockItems();
-            alert('✓ تم إعادة ضبط المخزون');
-        }
     });
 });

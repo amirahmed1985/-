@@ -23,6 +23,7 @@ function saveCart(cart) {
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
 }
 
+// ===== تحميل بيانات المخزون من Firestore (مشتركة بين جميع الزوار) =====
 async function loadStockFromFirestore() {
     try {
         const { doc, getDoc } = await import(
