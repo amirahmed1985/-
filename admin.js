@@ -242,9 +242,31 @@ function renderOrderLists() {
         ? '<p class="empty-message">لا توجد طلبات</p>'
         : pending.map((o, idx) => renderOrder(o.id, o.data, idx, pending.length, false)).join('');
 
-    deliveredPanel.innerHTML = delivered.length === 0
+    const deliveredCount = delivered.length;
+    const deliveredTotal = delivered.reduce((sum, o) => sum + (o.data.total || 0), 0);
+
+    const statsHtml = `
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+            <div style="flex: 1; min-width: 200px; background: rgba(59,92,58,0.08); border: 1px solid rgba(59,92,58,0.2); border-radius: 10px; padding: 1.2rem; display: flex; align-items: center; gap: 1rem;">
+                <span style="font-size: 2rem;">📦</span>
+                <div>
+                    <div style="font-size: 0.85rem; color: var(--ink-soft);">عدد الطلبات المكتملة</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--deep);">${toArabicDigits(deliveredCount)}</div>
+                </div>
+            </div>
+            <div style="flex: 1; min-width: 200px; background: rgba(217,142,59,0.08); border: 1px solid rgba(217,142,59,0.25); border-radius: 10px; padding: 1.2rem; display: flex; align-items: center; gap: 1rem;">
+                <span style="font-size: 2rem;">💰</span>
+                <div>
+                    <div style="font-size: 0.85rem; color: var(--ink-soft);">إجمالي مبيعات الطلبات المكتملة</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--amber);">${toArabicDigits(deliveredTotal)} ر.س.</div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    deliveredPanel.innerHTML = statsHtml + (delivered.length === 0
         ? '<p class="empty-message">لا توجد طلبات مكتملة</p>'
-        : delivered.map((o, idx) => renderOrder(o.id, o.data, idx, delivered.length, true)).join('');
+        : delivered.map((o, idx) => renderOrder(o.id, o.data, idx, delivered.length, true)).join(''));
 
     bindOrderActions();
 }
